@@ -1,0 +1,2632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FX学校へようこそ！</title>
+  <!-- PWA対応 -->
+  <meta name="theme-color" content="#3B82F6" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="FX学校" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <style>
+    /* =====================================================
+       リセット & ベーススタイル
+    ===================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #3B82F6;
+      --blue-dark:  #1D4ED8;
+      --blue-light: #EFF6FF;
+      --blue-mid:   #BFDBFE;
+      --green:      #10B981;
+      --green-light:#D1FAE5;
+      --red:        #EF4444;
+      --red-light:  #FEE2E2;
+      --yellow:     #F59E0B;
+      --yellow-light:#FEF3C7;
+      --gray-50:    #F9FAFB;
+      --gray-100:   #F3F4F6;
+      --gray-200:   #E5E7EB;
+      --gray-400:   #9CA3AF;
+      --gray-600:   #4B5563;
+      --gray-800:   #1F2937;
+      --white:      #FFFFFF;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+      --shadow-lg:  0 10px 30px rgba(0,0,0,.12);
+      --radius:     16px;
+      --radius-sm:  10px;
+    }
+
+    html, body {
+      height: 100%;
+      min-height: 100dvh;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.6;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =====================================================
+       アプリ全体コンテナ
+    ===================================================== */
+    #app {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+
+    /* =====================================================
+       画面切り替え（スクリーン管理）
+       .screen クラスは非表示、.active だけ表示
+    ===================================================== */
+    .screen { display: none; width: 100%; max-width: 560px; }
+    .screen.active { display: flex; flex-direction: column; gap: 16px; }
+
+    /* =====================================================
+       カードコンポーネント
+    ===================================================== */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid var(--gray-200);
+    }
+    .card-blue {
+      background: var(--blue-light);
+      border-color: var(--blue-mid);
+    }
+    .card-green {
+      background: var(--green-light);
+      border-color: #A7F3D0;
+    }
+    .card-red {
+      background: var(--red-light);
+      border-color: #FECACA;
+    }
+    .card-yellow {
+      background: var(--yellow-light);
+      border-color: #FDE68A;
+    }
+
+    /* =====================================================
+       ボタン
+    ===================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all .18s ease;
+      width: 100%;
+      text-align: center;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary {
+      background: var(--blue);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(59,130,246,.35);
+    }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-secondary {
+      background: var(--white);
+      color: var(--blue);
+      border: 2px solid var(--blue);
+    }
+    .btn-secondary:hover { background: var(--blue-light); }
+    .btn-green {
+      background: var(--green);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(16,185,129,.35);
+    }
+    .btn-green:hover { background: #059669; }
+    .btn-red {
+      background: var(--red);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(239,68,68,.3);
+    }
+    .btn-red:hover { background: #DC2626; }
+    .btn-yellow {
+      background: var(--yellow);
+      color: var(--white);
+    }
+    .btn-yellow:hover { background: #D97706; }
+    .btn-small {
+      padding: 10px 18px;
+      font-size: .9rem;
+      min-height: 44px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-row .btn { flex: 1; min-width: 120px; }
+
+    /* =====================================================
+       先生キャラクター（会話UI）
+    ===================================================== */
+    .teacher-bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .teacher-avatar {
+      flex-shrink: 0;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #60A5FA, #3B82F6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 12px rgba(59,130,246,.3);
+      border: 3px solid var(--white);
+    }
+    .teacher-speech {
+      background: var(--white);
+      border: 1.5px solid var(--blue-mid);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 16px 18px;
+      font-size: .97rem;
+      flex: 1;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.7;
+    }
+    .teacher-speech::before {
+      content: '';
+      position: absolute;
+      left: -10px; top: 10px;
+      border: 5px solid transparent;
+      border-right-color: var(--blue-mid);
+    }
+    .teacher-name {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    /* =====================================================
+       タイトル・見出し
+    ===================================================== */
+    h1 { font-size: 1.8rem; font-weight: 900; }
+    h2 { font-size: 1.3rem; font-weight: 800; }
+    h3 { font-size: 1.1rem; font-weight: 700; }
+    .subtitle { font-size: .9rem; color: var(--gray-600); }
+    .label {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* =====================================================
+       プログレスバー
+    ===================================================== */
+    .progress-bar {
+      background: var(--gray-200);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), #60A5FA);
+      border-radius: 99px;
+      transition: width .5s ease;
+    }
+
+    /* =====================================================
+       レベルバッジ
+    ===================================================== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .badge-blue { background: var(--blue-light); color: var(--blue-dark); }
+    .badge-green { background: var(--green-light); color: #065F46; }
+    .badge-yellow { background: var(--yellow-light); color: #92400E; }
+    .badge-red { background: var(--red-light); color: #991B1B; }
+    .badge-locked { background: var(--gray-100); color: var(--gray-400); }
+
+    /* =====================================================
+       通貨価格表示（大きな数字）
+    ===================================================== */
+    .price-display {
+      text-align: center;
+      padding: 20px;
+    }
+    .price-main {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+    }
+    .price-label {
+      font-size: .85rem;
+      color: var(--gray-600);
+      margin-top: 4px;
+    }
+    .price-up { color: var(--green); }
+    .price-down { color: var(--red); }
+    .price-neutral { color: var(--blue); }
+
+    /* =====================================================
+       アニメーション：フェードイン
+    ===================================================== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp .4s ease forwards; }
+
+    @keyframes bounceIn {
+      0%   { transform: scale(.6); opacity: 0; }
+      60%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .bounce-in { animation: bounceIn .5s ease forwards; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-6px); }
+      75%       { transform: translateX(6px); }
+    }
+    .shake { animation: shake .35s ease; }
+
+    /* 価格が変わる時のハイライト */
+    @keyframes priceFlash {
+      0%   { background: transparent; }
+      30%  { background: var(--blue-light); }
+      100% { background: transparent; }
+    }
+    .price-flash { animation: priceFlash .6s ease; }
+
+    /* =====================================================
+       チャートキャンバス
+    ===================================================== */
+    canvas.chart {
+      width: 100%;
+      height: 180px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--gray-200);
+      background: var(--white);
+      display: block;
+    }
+
+    /* =====================================================
+       選択肢ボタングループ（クイズ用）
+    ===================================================== */
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .choice-btn {
+      background: var(--white);
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      min-height: 44px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all .18s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .choice-btn:hover { border-color: var(--blue); background: var(--blue-light); }
+    .choice-btn.correct {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: #065F46;
+    }
+    .choice-btn.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+      color: #991B1B;
+    }
+    .choice-icon { font-size: 1.4rem; }
+
+    /* =====================================================
+       スターアニメーション（正解演出）
+    ===================================================== */
+    @keyframes starPop {
+      0%   { transform: scale(0) rotate(-30deg); opacity: 0; }
+      60%  { transform: scale(1.3) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .star-badge {
+      font-size: 3rem;
+      animation: starPop .5s ease forwards;
+      display: inline-block;
+    }
+
+    /* =====================================================
+       メインメニューのレベルカード
+    ===================================================== */
+    .level-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .level-card {
+      background: var(--white);
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+    }
+    .level-card:hover:not(.locked) {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .level-card.locked {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .level-card.cleared {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .level-card .level-icon { font-size: 2rem; margin-bottom: 8px; }
+    .level-card .level-num { font-size: .75rem; color: var(--gray-400); font-weight: 700; }
+    .level-card .level-title { font-size: .9rem; font-weight: 700; margin-top: 4px; }
+
+    /* =====================================================
+       利益・損失インジケーター
+    ===================================================== */
+    .pnl-display {
+      text-align: center;
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      font-size: 1.6rem;
+      font-weight: 900;
+    }
+    .pnl-up { background: var(--green-light); color: var(--green); }
+    .pnl-down { background: var(--red-light); color: var(--red); }
+    .pnl-zero { background: var(--gray-100); color: var(--gray-600); }
+
+    /* =====================================================
+       情報ボックス（豆知識・ヒント）
+    ===================================================== */
+    .info-box {
+      border-left: 4px solid var(--blue);
+      background: var(--blue-light);
+      padding: 14px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: .9rem;
+    }
+    .info-box.tip { border-color: var(--yellow); background: var(--yellow-light); }
+    .info-box.warn { border-color: var(--red); background: var(--red-light); }
+    .info-box.good { border-color: var(--green); background: var(--green-light); }
+
+    /* =====================================================
+       フローティングアニメ（正解時のコイン等）
+    ===================================================== */
+    .floating-anim {
+      position: fixed;
+      pointer-events: none;
+      font-size: 2rem;
+      animation: floatUp 1.2s ease forwards;
+      z-index: 9999;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-120px) scale(1.4); }
+    }
+
+    /* =====================================================
+       スクロール可能エリア
+    ===================================================== */
+    .scroll-area { overflow-y: auto; max-height: 60vh; }
+
+    /* =====================================================
+       スマホ対応
+    ===================================================== */
+    @media (max-width: 375px) {
+      .price-main { font-size: 2.2rem; }
+      .level-grid { grid-template-columns: 1fr; }
+      .teacher-avatar { width: 50px; height: 50px; font-size: 1.4rem; }
+    }
+
+    /* =====================================================
+       練習モード: ポジション表示
+    ===================================================== */
+    .position-panel {
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .position-item { text-align: center; }
+    .position-item .pi-label { font-size: .72rem; color: var(--gray-400); font-weight: 700; }
+    .position-item .pi-value { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+
+    /* =====================================================
+       ステップ表示（チュートリアル内）
+    ===================================================== */
+    .step-indicator {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      transition: background .3s;
+    }
+    .step-dot.active { background: var(--blue); }
+    .step-dot.done { background: var(--green); }
+
+    /* =====================================================
+       ヘッダー
+    ===================================================== */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 560px;
+      padding: calc(12px + env(safe-area-inset-top)) 0 4px;
+    }
+    .header-logo {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-score {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      background: var(--yellow-light);
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    /* =====================================================
+       セパレーター
+    ===================================================== */
+    .sep {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 4px 0;
+    }
+
+    /* =====================================================
+       練習モードチャート（インタラクティブ）
+    ===================================================== */
+    #practiceChart { cursor: crosshair; }
+
+    /* アニメーション：スライドイン */
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .slide-in { animation: slideInRight .35s ease forwards; }
+
+    /* =====================================================
+       用語集
+    ===================================================== */
+    .glossary-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .glossary-item:last-child { border-bottom: none; }
+    .glossary-term {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--blue-dark);
+    }
+    .glossary-def {
+      font-size: .9rem;
+      color: var(--gray-600);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- =====================================================
+       ヘッダー（常時表示）
+  ===================================================== -->
+  <header class="app-header" id="appHeader">
+    <div class="header-logo">📈 FX学校</div>
+    <div class="header-score" id="headerScore">⭐ 0pt</div>
+  </header>
+
+  <!-- =====================================================
+       SCREEN: タイトル画面
+  ===================================================== -->
+  <div class="screen active" id="screenTitle">
+    <div class="card" style="text-align:center; padding:32px 24px;">
+      <div style="font-size:4rem; margin-bottom:12px;">🏫</div>
+      <h1 style="font-size:1.6rem; color:var(--blue-dark); line-height:1.3;">
+        FX学校へ<br>ようこそ！
+      </h1>
+      <p style="margin:12px 0 0; color:var(--gray-600); font-size:.95rem;">
+        FXのことを楽しく学べるゲームです。<br>
+        知識ゼロでも大丈夫！
+      </p>
+    </div>
+
+    <div class="card card-blue">
+      <div class="teacher-bubble">
+        <div class="teacher-avatar">👩‍🏫</div>
+        <div class="teacher-speech">
+          <div class="teacher-name">先生・サクラ</div>
+          はじめまして！わたしはFX学校の先生、サクラです。<br>
+          FXって聞いたことある？難しそうに聞こえるけど、<br>
+          基本はとってもシンプルなんだよ😊<br>
+          一緒に楽しく学ぼう！
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:12px;">📖 FXってなに？</h3>
+      <p style="font-size:.92rem; color:var(--gray-600); line-height:1.8;">
+        <strong>FX（外国為替）</strong>とは、<br>
+        「お金をお金に換える」取引のことです。<br><br>
+        例えば、今日<strong>100円</strong>でドルを買って、<br>
+        明日そのドルが<strong>101円</strong>になったら…<br>
+        1円の利益が出る！というものです💡
+      </p>
+    </div>
+
+    <button class="btn btn-primary" onclick="goToMenu()">
+      🚀 ゲームをはじめる！
+    </button>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: メインメニュー
+  ===================================================== -->
+  <div class="screen" id="screenMenu">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2>🗺️ レベル選択</h2>
+        <span class="badge badge-blue">全7ステージ</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="totalProgress" style="width:0%"></div>
+      </div>
+      <p class="subtitle" style="margin-top:6px;" id="progressText">0 / 7 クリア</p>
+    </div>
+
+    <div class="level-grid" id="levelGrid">
+      <!-- JS で動的生成 -->
+    </div>
+
+    <!-- 練習モードカード（全クリア後解放） -->
+    <div class="card" id="practiceModeCard" style="display:none;">
+      <div class="teacher-bubble">
+        <div class="teacher-avatar">👩‍🏫</div>
+        <div class="teacher-speech">
+          <div class="teacher-name">サクラ先生</div>
+          🎉 練習モードが解放されました！<br>
+          実際にチャートを見ながら「買い」「売り」を体験できるよ！
+        </div>
+      </div>
+      <button class="btn btn-green" style="margin-top:14px;" onclick="startPractice()">
+        📊 練習モードをはじめる
+      </button>
+    </div>
+
+    <!-- 用語集ボタン -->
+    <button class="btn btn-secondary" onclick="showGlossary()">
+      📚 用語集を見る
+    </button>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル1「買いとは何か」
+  ===================================================== -->
+  <div class="screen" id="screenLevel1">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span class="badge badge-blue">レベル1</span>
+        <h2 style="color:var(--blue-dark);">「買い」ってなに？</h2>
+      </div>
+      <div class="step-indicator" id="step1Indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+
+    <!-- ステップ1：状況説明 -->
+    <div id="l1step1" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            今日、<strong>1ドル = 150円</strong>です。<br><br>
+            もし明日、ドルの値段が変わるとしたら…<br>
+            どっちになると思う？
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="price-display">
+          <div class="label">現在の価格</div>
+          <div class="price-main price-neutral">150<span style="font-size:1.4rem;">円</span></div>
+          <div class="price-label">1ドルあたりの値段</div>
+        </div>
+        <div class="sep"></div>
+        <p style="font-size:.9rem; text-align:center; color:var(--gray-600); margin-top:12px;">
+          明日のドルの値段は…？
+        </p>
+      </div>
+
+      <div class="choices">
+        <button class="choice-btn" onclick="l1Answer('up')">
+          <span class="choice-icon">📈</span>
+          <div>
+            <strong>上がると思う！</strong>
+            <div style="font-size:.8rem; color:var(--gray-600);">150円より高くなる</div>
+          </div>
+        </button>
+        <button class="choice-btn" onclick="l1Answer('down')">
+          <span class="choice-icon">📉</span>
+          <div>
+            <strong>下がると思う</strong>
+            <div style="font-size:.8rem; color:var(--gray-600);">150円より安くなる</div>
+          </div>
+        </button>
+        <button class="choice-btn" onclick="l1Answer('unknown')">
+          <span class="choice-icon">🤔</span>
+          <div>
+            <strong>わからない</strong>
+            <div style="font-size:.8rem; color:var(--gray-600);">どちらともいえない</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ステップ2：上がった場合の説明 -->
+    <div id="l1step2" style="display:none;" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            <span id="l1teacherMsg"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="l1PriceCard">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px; padding:12px;">
+          <div style="text-align:center;">
+            <div class="label">買った時</div>
+            <div style="font-size:2rem; font-weight:900; color:var(--blue);">150円</div>
+          </div>
+          <div style="font-size:2rem;">→</div>
+          <div style="text-align:center;" id="l1ResultPrice">
+            <div class="label">今の値段</div>
+            <div style="font-size:2rem; font-weight:900;" id="l1ResultValue"></div>
+          </div>
+        </div>
+        <div id="l1PnlBox" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card card-blue">
+        <h3 style="margin-bottom:10px; color:var(--blue-dark);">💡 ここがポイント！</h3>
+        <div id="l1Explanation"></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="l1Step3()">
+        次へ進む →
+      </button>
+    </div>
+
+    <!-- ステップ3：「買い」のまとめ -->
+    <div id="l1step3" style="display:none;" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            FXでは、「値段が上がりそう！」と思った時に<br>
+            <strong>「買い」</strong>を選びます。<br><br>
+            上がれば利益💚、下がれば損失💸<br>
+            これがFXの一番基本的な仕組みだよ！
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:12px;">📝 まとめ</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="info-box good">
+            <strong>「買い」とは？</strong><br>
+            値段が上がると思った時に選ぶ取引。<br>
+            安く買って、高く売れば利益になる！
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px; background:var(--gray-50); border-radius:var(--radius-sm);">
+            <div style="font-size:2rem;">🛍️</div>
+            <div style="font-size:.9rem;">
+              スーパーで安い時に食料を買って、<br>
+              値上がりしたら売るのと同じ感覚！
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <div class="star-badge">⭐</div>
+        <h2 style="margin-top:8px; color:var(--blue-dark);">レベル1 クリア！</h2>
+        <p style="color:var(--gray-600); font-size:.9rem; margin-top:6px;">「買い」を理解しました！</p>
+      </div>
+
+      <button class="btn btn-primary" onclick="clearLevel(1)">
+        🎉 メニューに戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル2「売りとは何か」
+  ===================================================== -->
+  <div class="screen" id="screenLevel2">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span class="badge badge-blue">レベル2</span>
+        <h2 style="color:var(--blue-dark);">「売り」ってなに？</h2>
+      </div>
+    </div>
+
+    <div id="l2content" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            FXには不思議な力があります。<br>
+            なんと、<strong>値段が下がる時でも</strong>利益を出せるんです！<br><br>
+            これが「<strong>売り</strong>（空売り）」という取引だよ。
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom:12px;">🤔 「売り」ってどういう仕組み？</h3>
+        <div style="font-size:.92rem; line-height:1.9; color:var(--gray-600);">
+          たとえば友達に頼んで…<br><br>
+          <div style="background:var(--gray-50); padding:14px; border-radius:var(--radius-sm); margin:8px 0;">
+            <strong>①</strong> 友達から<span style="color:var(--red); font-weight:700;">151円</span>のドルを借りる<br>
+            <strong>②</strong> すぐに<span style="color:var(--red); font-weight:700;">151円</span>で誰かに売る<br>
+            <strong>③</strong> 価格が下がって<span style="color:var(--blue); font-weight:700;">150円</span>になった！<br>
+            <strong>④</strong> <span style="color:var(--blue); font-weight:700;">150円</span>で買い戻して友達に返す<br>
+            <strong>⑤</strong> 差額の<span style="color:var(--green); font-weight:700;">1円</span>が利益に！🎉
+          </div>
+        </div>
+      </div>
+
+      <!-- インタラクティブ：売りの体験 -->
+      <div class="card card-yellow">
+        <h3 style="margin-bottom:12px;">🎮 実際にやってみよう！</h3>
+        <p style="font-size:.9rem; margin-bottom:14px;">
+          今のドル価格は<strong>151円</strong>です。<br>
+          「下がりそう！」と思ったら「売り」を選んでみよう。
+        </p>
+
+        <div class="price-display">
+          <div class="label">現在の価格</div>
+          <div class="price-main" id="l2CurrentPrice" style="color:var(--red);">151円</div>
+        </div>
+
+        <div id="l2BeforeAction">
+          <button class="btn btn-red" onclick="l2DoSell()">
+            📉 「売り」を選ぶ！
+          </button>
+        </div>
+
+        <div id="l2AfterAction" style="display:none;" class="fade-in">
+          <div class="info-box good" style="margin-bottom:10px;">
+            ✅ 151円で「売り」ました！<br>
+            価格が下がるのを待ちましょう…
+          </div>
+          <button class="btn btn-primary" onclick="l2ShowResult()">
+            ⏩ 翌日を見る
+          </button>
+        </div>
+
+        <div id="l2Result" style="display:none;" class="fade-in">
+          <div style="display:flex; align-items:center; justify-content:center; gap:20px; padding:12px 0;">
+            <div style="text-align:center;">
+              <div class="label">売った時</div>
+              <div style="font-size:2rem; font-weight:900; color:var(--red);">151円</div>
+            </div>
+            <div style="font-size:1.5rem;">→</div>
+            <div style="text-align:center;">
+              <div class="label">買い戻した</div>
+              <div style="font-size:2rem; font-weight:900; color:var(--blue);">150円</div>
+            </div>
+          </div>
+          <div class="pnl-display pnl-up" style="margin:10px 0;">+1円の利益 🎉</div>
+          <div class="info-box good" style="margin-top:10px;">
+            <strong>やったね！</strong><br>
+            151円で売って、150円で買い戻したので<br>
+            <strong>1円 × 取引量</strong> が利益です！
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="l2Complete()">
+            理解できた！次へ →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="l2summary" style="display:none;" class="fade-in">
+      <div class="card">
+        <h3 style="margin-bottom:12px;">📝 買いと売りの違い</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="card card-green" style="padding:14px; text-align:center;">
+            <div style="font-size:1.8rem;">📈</div>
+            <div style="font-weight:800; margin-top:6px;">「買い」</div>
+            <div style="font-size:.82rem; margin-top:4px; color:var(--gray-600);">
+              上がると思った時<br>
+              安く買って高く売る
+            </div>
+          </div>
+          <div class="card card-red" style="padding:14px; text-align:center;">
+            <div style="font-size:1.8rem;">📉</div>
+            <div style="font-weight:800; margin-top:6px;">「売り」</div>
+            <div style="font-size:.82rem; margin-top:4px; color:var(--gray-600);">
+              下がると思った時<br>
+              高く売って安く買い戻す
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <div class="star-badge">⭐⭐</div>
+        <h2 style="margin-top:8px; color:var(--blue-dark);">レベル2 クリア！</h2>
+        <p style="color:var(--gray-600); font-size:.9rem; margin-top:6px;">「売り」を理解しました！</p>
+      </div>
+
+      <button class="btn btn-primary" onclick="clearLevel(2)">
+        🎉 メニューに戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル3「利益と損失の体験」
+  ===================================================== -->
+  <div class="screen" id="screenLevel3">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge badge-blue">レベル3</span>
+        <h2 style="color:var(--blue-dark);">利益と損失を体験！</h2>
+      </div>
+    </div>
+
+    <div id="l3content">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            実際にチャート（価格グラフ）を見ながら<br>
+            利益と損失を体験してみよう！<br><br>
+            チャートとは、<strong>価格の動きを線グラフにしたもの</strong>だよ📊
+          </div>
+        </div>
+      </div>
+
+      <!-- チャート表示エリア -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h3>ドル円チャート</h3>
+          <span class="badge badge-blue" id="l3CurrentBadge">現在: 150.00円</span>
+        </div>
+        <canvas id="l3Chart" class="chart" width="520" height="180"></canvas>
+        <div style="display:flex; justify-content:space-between; font-size:.75rem; color:var(--gray-400); margin-top:4px;">
+          <span>← 過去</span><span>現在 →</span>
+        </div>
+      </div>
+
+      <!-- 取引パネル -->
+      <div id="l3TradePanel" class="card">
+        <h3 style="margin-bottom:10px;">🎮 取引してみよう</h3>
+        <p style="font-size:.88rem; color:var(--gray-600); margin-bottom:14px;" id="l3TradeMsg">
+          今の価格でドルを「買い」ますか？
+        </p>
+        <div id="l3Actions" class="btn-row">
+          <button class="btn btn-green btn-small" onclick="l3Buy()">📈 買う</button>
+          <button class="btn btn-red btn-small" onclick="l3Sell()">📉 売る</button>
+        </div>
+      </div>
+
+      <!-- ポジション中表示 -->
+      <div id="l3PositionPanel" style="display:none;" class="card">
+        <h3 style="margin-bottom:10px;">📌 取引中</h3>
+        <div class="position-panel">
+          <div class="position-item">
+            <div class="pi-label">取引の種類</div>
+            <div class="pi-value" id="l3PosType">—</div>
+          </div>
+          <div class="position-item">
+            <div class="pi-label">開始価格</div>
+            <div class="pi-value" id="l3EntryPrice">—</div>
+          </div>
+          <div class="position-item">
+            <div class="pi-label">現在価格</div>
+            <div class="pi-value" id="l3CurrentPrice">—</div>
+          </div>
+          <div class="position-item">
+            <div class="pi-label">含み損益</div>
+            <div class="pi-value" id="l3PnL">—</div>
+          </div>
+        </div>
+        <button class="btn btn-yellow" style="margin-top:12px;" onclick="l3Settle()">
+          🏁 決済する（取引を終わらせる）
+        </button>
+      </div>
+
+      <!-- 結果 -->
+      <div id="l3Result" style="display:none;" class="fade-in">
+        <div class="card" id="l3ResultCard">
+          <h3 style="margin-bottom:10px;" id="l3ResultTitle"></h3>
+          <div class="pnl-display" id="l3ResultPnl"></div>
+          <div class="info-box" style="margin-top:12px;" id="l3ResultExplain"></div>
+        </div>
+        <button class="btn btn-primary" id="l3NextBtn" onclick="l3Next()">次へ →</button>
+      </div>
+    </div>
+
+    <!-- まとめ -->
+    <div id="l3summary" style="display:none;" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            FXは予想が当たれば利益、外れれば損失が出ます。<br>
+            大切なのは「<strong>損を小さくして、利益を大きく</strong>」することなんだ！
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <div class="star-badge">⭐⭐⭐</div>
+        <h2 style="margin-top:8px; color:var(--blue-dark);">レベル3 クリア！</h2>
+      </div>
+      <button class="btn btn-primary" onclick="clearLevel(3)">
+        🎉 メニューに戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル4「利確と損切り」
+  ===================================================== -->
+  <div class="screen" id="screenLevel4">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge badge-yellow">レベル4</span>
+        <h2 style="color:var(--blue-dark);">利確と損切り</h2>
+      </div>
+    </div>
+
+    <div id="l4content" class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            FXで大切な2つのワードを覚えよう！<br><br>
+            <strong>利確（りかく）</strong>：利益を確定させること<br>
+            <strong>損切り（そんぎり）</strong>：損失をそれ以上増やさないために、取引を終わらせること
+          </div>
+        </div>
+      </div>
+
+      <!-- シナリオゲーム -->
+      <div class="card card-yellow">
+        <h3 style="margin-bottom:10px;">🎮 判断ゲーム！</h3>
+        <p style="font-size:.88rem; margin-bottom:14px;" id="l4ScenarioText"></p>
+        <canvas id="l4Chart" class="chart" width="520" height="160"></canvas>
+        <div style="margin-top:12px;" id="l4DecisionArea"></div>
+      </div>
+
+      <div id="l4Result" style="display:none;" class="fade-in">
+        <div class="card" id="l4ResultCard">
+          <div id="l4ResultContent"></div>
+        </div>
+        <button class="btn btn-primary" id="l4NextBtn"></button>
+      </div>
+    </div>
+
+    <div id="l4summary" style="display:none;" class="fade-in">
+      <div class="card">
+        <h3 style="margin-bottom:12px;">📝 利確と損切りのまとめ</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="info-box good">
+            <strong>利確（りかく）とは？</strong><br>
+            利益が出ている時に「もうここで終わりにする！」と決めること。<br>
+            欲張ってずっと持ち続けると、価格が戻ってきて利益が減ることも😮
+          </div>
+          <div class="info-box warn">
+            <strong>損切り（そんぎり）とは？</strong><br>
+            損失が出ている時に「これ以上は無理！」とあきらめること。<br>
+            損切りは「失敗」じゃなく、賢い判断だよ！大切なお金を守ることが最重要💪
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <div class="star-badge">🌟</div>
+        <h2 style="margin-top:8px; color:var(--blue-dark);">レベル4 クリア！</h2>
+      </div>
+      <button class="btn btn-primary" onclick="clearLevel(4)">
+        🎉 メニューに戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル5「ロット（取引量）」
+  ===================================================== -->
+  <div class="screen" id="screenLevel5">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge badge-green">レベル5</span>
+        <h2 style="color:var(--blue-dark);">ロット＝取引量のこと</h2>
+      </div>
+    </div>
+
+    <div class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            「ロット」という言葉が出てきます。<br>
+            難しそうだけど、要するに<strong>「どのくらいの量を取引するか」</strong>のことだよ。
+          </div>
+        </div>
+      </div>
+
+      <!-- ジュースの例え -->
+      <div class="card">
+        <h3 style="margin-bottom:14px;">🧃 ジュースで例えてみよう</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="background:var(--gray-50); border-radius:var(--radius-sm); padding:14px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:2.4rem;">🧃</div>
+            <div>
+              <div style="font-weight:700;">ロット1 ＝ ジュース1本</div>
+              <div style="font-size:.85rem; color:var(--gray-600); margin-top:2px;">
+                1円上がったら → 1円の利益<br>
+                1円下がったら → 1円の損失
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--blue-light); border-radius:var(--radius-sm); padding:14px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:2.4rem;">🧃🧃🧃🧃🧃🧃🧃🧃🧃🧃</div>
+          </div>
+          <div style="background:var(--blue-light); border-radius:var(--radius-sm); padding:14px; display:flex; align-items:center; gap:14px;">
+            <div style="font-size:2.4rem;">📦</div>
+            <div>
+              <div style="font-weight:700;">ロット10 ＝ ジュース10本</div>
+              <div style="font-size:.85rem; color:var(--gray-600); margin-top:2px;">
+                1円上がったら → <strong style="color:var(--green);">10円の利益</strong><br>
+                1円下がったら → <strong style="color:var(--red);">10円の損失</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- クイズ -->
+      <div class="card card-yellow">
+        <h3 style="margin-bottom:10px;">❓ クイズ！</h3>
+        <p style="font-size:.92rem; margin-bottom:14px;">
+          ロット5（ジュース5本分）で取引して、<br>
+          価格が<strong>2円上がった</strong>とき、利益はいくら？
+        </p>
+        <div class="choices" id="l5Quiz">
+          <button class="choice-btn" onclick="l5Answer(2, this)">
+            <span class="choice-icon">💭</span> 2円
+          </button>
+          <button class="choice-btn" onclick="l5Answer(5, this)">
+            <span class="choice-icon">💭</span> 5円
+          </button>
+          <button class="choice-btn" onclick="l5Answer(10, this)">
+            <span class="choice-icon">💭</span> 10円 ✨
+          </button>
+        </div>
+      </div>
+
+      <div id="l5Result" style="display:none;" class="card card-green fade-in">
+        <h3 style="margin-bottom:8px; color:#065F46;">🎉 正解！</h3>
+        <p style="font-size:.92rem;">
+          <strong>2円 × 5ロット = 10円</strong><br><br>
+          ロット数が多いほど、利益も損失も大きくなります。<br>
+          だから始めは小さいロット数から始めるのが基本です！
+        </p>
+        <div class="info-box" style="margin-top:12px;">
+          <strong>💡 実際のFXの単位</strong><br>
+          FXでは1ロット = 通常10万通貨です。<br>
+          ただし、少額取引できる「マイクロロット」もあるよ！
+        </div>
+      </div>
+
+      <div id="l5CompleteBtn" style="display:none;">
+        <div class="card" style="text-align:center;">
+          <div class="star-badge">⭐</div>
+          <h2 style="margin-top:8px; color:var(--blue-dark);">レベル5 クリア！</h2>
+        </div>
+        <button class="btn btn-primary" onclick="clearLevel(5)">
+          🎉 メニューに戻る
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル6「レバレッジ」
+  ===================================================== -->
+  <div class="screen" id="screenLevel6">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge badge-green">レベル6</span>
+        <h2 style="color:var(--blue-dark);">レバレッジって何？</h2>
+      </div>
+    </div>
+
+    <div class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            「レバレッジ」とは、<strong>少ないお金で大きな取引をする仕組み</strong>のことです。<br><br>
+            身近なものに例えてみるね！
+          </div>
+        </div>
+      </div>
+
+      <!-- 乗り物の例え（インタラクティブ） -->
+      <div class="card">
+        <h3 style="margin-bottom:14px;">🚗 乗り物で考えてみよう</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:var(--gray-50); border-radius:var(--radius-sm); padding:16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:2.5rem;">🚲</div>
+              <div>
+                <div style="font-weight:800;">自転車（レバレッジ1倍）</div>
+                <div style="font-size:.85rem; color:var(--gray-600); margin-top:4px;">
+                  自分の足だけで走る。<br>
+                  1万円持ってたら、1万円分だけ取引できる。
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--yellow-light); border-radius:var(--radius-sm); padding:16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:2.5rem;">🏍️</div>
+              <div>
+                <div style="font-weight:800;">バイク（レバレッジ10倍）</div>
+                <div style="font-size:.85rem; color:var(--gray-600); margin-top:4px;">
+                  エンジンの力で速く走れる。<br>
+                  1万円で、10万円分の取引ができる！
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--blue-light); border-radius:var(--radius-sm); padding:16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:2.5rem;">🚗</div>
+              <div>
+                <div style="font-weight:800;">車（レバレッジ25倍）</div>
+                <div style="font-size:.85rem; color:var(--gray-600); margin-top:4px;">
+                  もっと速く、遠くへ行ける。<br>
+                  1万円で、25万円分の取引ができる！
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- レバレッジ計算機 -->
+      <div class="card card-yellow">
+        <h3 style="margin-bottom:12px;">🧮 レバレッジ計算機</h3>
+        <p style="font-size:.88rem; margin-bottom:12px;">
+          自分のお金と倍率を変えてみよう
+        </p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <div class="label" style="margin-bottom:4px;">自分が持っているお金</div>
+            <select id="leverageOwnMoney" onchange="calcLeverage()"
+              style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1.5px solid var(--gray-200); font-size:1rem;">
+              <option value="10000">1万円</option>
+              <option value="50000">5万円</option>
+              <option value="100000">10万円</option>
+            </select>
+          </div>
+          <div>
+            <div class="label" style="margin-bottom:4px;">レバレッジ倍率</div>
+            <select id="leverageRate" onchange="calcLeverage()"
+              style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1.5px solid var(--gray-200); font-size:1rem;">
+              <option value="1">1倍（自転車）</option>
+              <option value="5">5倍</option>
+              <option value="10">10倍（バイク）</option>
+              <option value="25">25倍（車）</option>
+            </select>
+          </div>
+          <div style="background:var(--white); border-radius:var(--radius-sm); padding:14px; text-align:center;">
+            <div class="label">取引できる金額</div>
+            <div style="font-size:2rem; font-weight:900; color:var(--blue); margin-top:4px;" id="leverageResult">1万円</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 注意 -->
+      <div class="info-box warn">
+        <strong>⚠️ レバレッジは両刃の剣！</strong><br>
+        利益も大きくなりますが、<strong>損失も同じだけ大きく</strong>なります。<br>
+        初心者には低いレバレッジがオススメ。車より自転車から！
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <div class="star-badge">⭐</div>
+        <h2 style="margin-top:8px; color:var(--blue-dark);">レベル6 クリア！</h2>
+      </div>
+      <button class="btn btn-primary" onclick="clearLevel(6)">
+        🎉 メニューに戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: レベル7「CPI（物価指標）」
+  ===================================================== -->
+  <div class="screen" id="screenLevel7">
+    <div class="card card-blue">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge badge-yellow">レベル7</span>
+        <h2 style="color:var(--blue-dark);">CPI＝物価の成績表</h2>
+      </div>
+    </div>
+
+    <div class="fade-in">
+      <div class="card">
+        <div class="teacher-bubble">
+          <div class="teacher-avatar">👩‍🏫</div>
+          <div class="teacher-speech">
+            <div class="teacher-name">サクラ先生</div>
+            <strong>CPI（消費者物価指数）</strong>とは、<br>
+            アメリカの物価（ものの値段）がどう変わったかを<br>
+            数字で表した「<strong>物価の成績表</strong>」です📋
+          </div>
+        </div>
+      </div>
+
+      <!-- ハンバーガー価格の例え -->
+      <div class="card">
+        <h3 style="margin-bottom:12px;">🍔 ハンバーガーで考えてみよう</h3>
+        <div style="font-size:.92rem; line-height:1.9;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+            <div style="font-size:2rem;">🍔</div>
+            <div>去年のハンバーガー：<strong>500円</strong></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:2rem;">🍔</div>
+            <div>今年のハンバーガー：<strong style="color:var(--red);">600円</strong></div>
+          </div>
+          <div style="margin-top:12px; padding:12px; background:var(--red-light); border-radius:var(--radius-sm);">
+            → 物価が<strong>上がった</strong>！これが「<strong>インフレ</strong>（物価上昇）」
+          </div>
+        </div>
+      </div>
+
+      <!-- CPI高い時/低い時のフロー図（アニメーション） -->
+      <div class="card">
+        <h3 style="margin-bottom:12px;">📊 CPIがドル円に与える影響</h3>
+
+        <div id="cpiScenarioSelect">
+          <p style="font-size:.88rem; margin-bottom:10px;">シナリオを選んでみよう：</p>
+          <div class="btn-row">
+            <button class="btn btn-red btn-small" onclick="showCpiScenario('high')">
+              📈 CPIが高かった！
+            </button>
+            <button class="btn btn-blue btn-small" onclick="showCpiScenario('low')" style="background:var(--blue); color:white;">
+              📉 CPIが低かった
+            </button>
+          </div>
+        </div>
+
+        <div id="cpiFlow" style="display:none; margin-top:14px;" class="fade-in">
+          <div id="cpiFlowContent"></div>
+          <canvas id="cpiChart" class="chart" width="520" height="160" style="margin-top:12px;"></canvas>
+        </div>
+      </div>
+
+      <div id="l7CompleteArea" style="display:none;" class="fade-in">
+        <div class="info-box">
+          <strong>💡 なぜCPIが重要なの？</strong><br>
+          物価が上がりすぎるとアメリカの中央銀行（FRB）が<br>
+          金利を上げます。金利が上がるとドルが買われやすくなり、<br>
+          ドル円も上がることが多いんです！
+        </div>
+
+        <div class="card" style="text-align:center;">
+          <div class="star-badge">🌟</div>
+          <h2 style="margin-top:8px; color:var(--blue-dark);">レベル7 クリア！</h2>
+          <p style="color:var(--gray-600); font-size:.9rem; margin-top:6px;">全ステージ制覇！すごい！🎉</p>
+        </div>
+        <button class="btn btn-primary" onclick="clearLevel(7)">
+          🎉 メニューに戻る
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: 練習モード
+  ===================================================== -->
+  <div class="screen" id="screenPractice">
+    <div class="card card-blue">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-green" style="margin-bottom:6px; display:inline-block;">練習モード</span>
+          <h2 style="color:var(--blue-dark);">リアルチャート体験</h2>
+        </div>
+        <button onclick="goToMenu()" style="background:none; border:none; font-size:1.3rem; cursor:pointer;">←</button>
+      </div>
+    </div>
+
+    <!-- チャート -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3>ドル円</h3>
+        <span class="badge" id="practicePriceBadge" style="font-size:1rem; background:var(--blue-light); color:var(--blue-dark); padding:6px 14px;">150.00</span>
+      </div>
+      <canvas id="practiceChart" class="chart" width="520" height="200"></canvas>
+      <div style="display:flex; justify-content:space-between; font-size:.75rem; color:var(--gray-400); margin-top:4px;">
+        <span>← 30時間前</span><span>現在 →</span>
+      </div>
+    </div>
+
+    <!-- 取引パネル（ポジション無し） -->
+    <div id="practiceNoPosition" class="card">
+      <h3 style="margin-bottom:10px;">📌 今のポジション：なし</h3>
+      <p style="font-size:.88rem; color:var(--gray-600); margin-bottom:14px;">
+        現在の価格でどちらかを選んでください。<br>
+        「どちらに動くか」を予想してみよう！
+      </p>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="practiceBuy()">
+          📈 買う（上がると思う）
+        </button>
+        <button class="btn btn-red" onclick="practiceSell()">
+          📉 売る（下がると思う）
+        </button>
+      </div>
+    </div>
+
+    <!-- ポジション中 -->
+    <div id="practiceHasPosition" style="display:none;" class="card">
+      <h3 style="margin-bottom:10px;">📌 取引中！</h3>
+      <div class="position-panel">
+        <div class="position-item">
+          <div class="pi-label">ポジション</div>
+          <div class="pi-value" id="practicePosType">—</div>
+        </div>
+        <div class="position-item">
+          <div class="pi-label">エントリー</div>
+          <div class="pi-value" id="practiceEntryPrice">—</div>
+        </div>
+        <div class="position-item">
+          <div class="pi-label">現在価格</div>
+          <div class="pi-value" id="practiceCurrentP">—</div>
+        </div>
+        <div class="position-item">
+          <div class="pi-label">含み損益</div>
+          <div class="pi-value" id="practicePnl">—</div>
+        </div>
+      </div>
+      <button class="btn btn-yellow" style="margin-top:12px;" onclick="practiceSettle()">
+        🏁 決済する
+      </button>
+    </div>
+
+    <!-- チャートを進める -->
+    <button class="btn btn-secondary" id="practiceAdvanceBtn" onclick="advancePracticeChart()">
+      ⏩ 次の時間へ進む
+    </button>
+
+    <!-- 結果画面 -->
+    <div id="practiceResult" style="display:none;" class="fade-in">
+      <div class="card" id="practiceResultCard">
+        <h3 style="margin-bottom:10px;" id="practiceResultTitle"></h3>
+        <div class="pnl-display" id="practiceResultPnl"></div>
+        <div style="margin-top:14px;" id="practiceResultExplain"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="practiceReset()">🔄 もう1回</button>
+        <button class="btn btn-secondary" onclick="goToMenu()">← メニュー</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       SCREEN: 用語集
+  ===================================================== -->
+  <div class="screen" id="screenGlossary">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>📚 用語集</h2>
+        <button onclick="goToMenu()" style="background:none; border:none; font-size:.9rem; color:var(--blue); cursor:pointer; font-weight:700;">← 戻る</button>
+      </div>
+      <p class="subtitle" style="margin-top:6px;">学習した言葉の一覧</p>
+    </div>
+    <div class="card">
+      <div class="glossary-item" id="glossaryUnlocked">
+        <!-- JS で動的生成 -->
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ================================================================
+   グローバル状態管理
+   ゲームの進行状況をすべてここで管理する
+================================================================ */
+const state = {
+  score: 0,               // 獲得スコア
+  clearedLevels: [],      // クリアしたレベルの配列（例：[1, 2, 3]）
+  practiceUnlocked: false // 練習モード解放フラグ
+};
+
+/* ================================================================
+   レベル定義
+   各レベルのタイトル・アイコン・必要なレベルを定義
+================================================================ */
+const LEVELS = [
+  { id: 1, title: '「買い」とは', icon: '📈', requires: 0 },
+  { id: 2, title: '「売り」とは', icon: '📉', requires: 1 },
+  { id: 3, title: '利益と損失', icon: '💹', requires: 2 },
+  { id: 4, title: '利確と損切り', icon: '✂️', requires: 3 },
+  { id: 5, title: 'ロットとは',   icon: '📦', requires: 4 },
+  { id: 6, title: 'レバレッジ',  icon: '⚡', requires: 5 },
+  { id: 7, title: 'CPIとは',    icon: '📊', requires: 6 },
+];
+
+/* 用語集データ（レベルごとに解放） */
+const GLOSSARY = [
+  { level: 1, term: '買い（ロング）', def: '価格が上がると予想して、安く買って高く売ることで利益を狙う取引。' },
+  { level: 2, term: '売り（ショート）', def: '価格が下がると予想して、高く売って安く買い戻すことで利益を狙う取引。FXならではの仕組み。' },
+  { level: 3, term: '利益 / 損失', def: '利益は取引で増えたお金。損失は取引で減ったお金。' },
+  { level: 3, term: '含み損益（ふくみそんえき）', def: 'まだ決済していない、今現在の損益。取引を終わらせるまで確定しない。' },
+  { level: 4, term: '利確（りかく）', def: '利益が出ている状態で取引を終わらせること。利益を確定させる行為。' },
+  { level: 4, term: '損切り（そんぎり）', def: '損失が拡大しないように、マイナスのうちに取引を終わらせること。リスク管理の基本。' },
+  { level: 5, term: 'ロット', def: '取引量の単位。ロット数が大きいほど、1円の価格変動での利益・損失が大きくなる。' },
+  { level: 6, term: 'レバレッジ', def: '少ないお金で大きな取引をする仕組み。10倍なら1万円で10万円分の取引ができる。利益も損失も同じ倍率になる。' },
+  { level: 6, term: '証拠金（しょうこきん）', def: 'レバレッジ取引をするための担保として預けるお金のこと。' },
+  { level: 7, term: 'CPI（消費者物価指数）', def: 'Consumer Price Indexの略。一般的な商品・サービスの価格変動を測る指標。インフレの目安になる。' },
+  { level: 7, term: 'インフレ', def: '物の値段が全体的に上がっていく現象。お金の価値が下がることでもある。' },
+  { level: 7, term: 'FRB（米連邦準備制度理事会）', def: 'アメリカの中央銀行。政策金利を決定し、ドルの価値に大きな影響を与える。' },
+];
+
+/* ================================================================
+   初期化：ページ読み込み時に実行
+================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  // ローカルストレージからセーブデータを読み込む
+  loadSave();
+  // ヘッダースコアを更新
+  updateHeader();
+  // PWA Service Worker 登録（Vercel公開時に有効）
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  }
+});
+
+/* セーブデータのキー（バージョン管理） */
+const SAVE_KEY = 'fxgame_v1';
+
+/* セーブデータの読み込み */
+function loadSave() {
+  try {
+    // 旧キー 'fxgame' からの自動移行（1回限り）
+    const legacy = localStorage.getItem('fxgame');
+    if (legacy && !localStorage.getItem(SAVE_KEY)) {
+      localStorage.setItem(SAVE_KEY, legacy);
+      localStorage.removeItem('fxgame');
+    }
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      state.score = data.score || 0;
+      state.clearedLevels = data.clearedLevels || [];
+      state.practiceUnlocked = data.practiceUnlocked || false;
+    }
+  } catch(e) {
+    console.log('LocalStorage not available, using session only');
+  }
+}
+
+/* セーブデータの保存 */
+function saveGame() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch(e) {
+    // 保存できなくてもOK
+  }
+}
+
+/* ================================================================
+   画面切り替え関数
+   showScreen('screenMenu') のように呼び出す
+================================================================ */
+function showScreen(screenId) {
+  // 全スクリーンを非表示にする
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // 指定したスクリーンを表示する
+  const target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add('active');
+    // 画面の一番上にスクロール
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+/* ================================================================
+   ヘッダー更新
+================================================================ */
+function updateHeader() {
+  document.getElementById('headerScore').textContent = `⭐ ${state.score}pt`;
+}
+
+/* ================================================================
+   メインメニューへ移動
+================================================================ */
+function goToMenu() {
+  buildLevelGrid();
+  updateProgress();
+  updatePracticeCard();
+  showScreen('screenMenu');
+}
+
+/* レベルグリッドを構築 */
+function buildLevelGrid() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+
+  LEVELS.forEach(level => {
+    const isCleared = state.clearedLevels.includes(level.id);
+    const isUnlocked = level.requires === 0 || state.clearedLevels.includes(level.requires);
+
+    const card = document.createElement('div');
+    card.className = `level-card ${isCleared ? 'cleared' : ''} ${!isUnlocked ? 'locked' : ''}`;
+
+    card.innerHTML = `
+      <div class="level-icon">${isCleared ? '✅' : isUnlocked ? level.icon : '🔒'}</div>
+      <div class="level-num">レベル ${level.id}</div>
+      <div class="level-title">${level.title}</div>
+      ${isCleared ? '<div style="font-size:.75rem; color:var(--green); margin-top:4px; font-weight:700;">クリア！</div>' : ''}
+    `;
+
+    if (isUnlocked) {
+      card.addEventListener('click', () => startLevel(level.id));
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+/* プログレス更新 */
+function updateProgress() {
+  const count = state.clearedLevels.length;
+  const pct = (count / 7) * 100;
+  document.getElementById('totalProgress').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${count} / 7 クリア`;
+}
+
+/* 練習モードカードの表示切り替え */
+function updatePracticeCard() {
+  const card = document.getElementById('practiceModeCard');
+  // 全レベルクリアで解放
+  if (state.clearedLevels.length >= 7) {
+    card.style.display = 'block';
+  }
+  // レベル3以上クリアでも解放（練習できるように）
+  if (state.clearedLevels.length >= 3) {
+    card.style.display = 'block';
+  }
+}
+
+/* ================================================================
+   レベル開始
+================================================================ */
+function startLevel(levelId) {
+  switch(levelId) {
+    case 1: startLevel1(); break;
+    case 2: startLevel2(); break;
+    case 3: startLevel3(); break;
+    case 4: startLevel4(); break;
+    case 5: showScreen('screenLevel5'); break;
+    case 6: showScreen('screenLevel6'); calcLeverage(); break;
+    case 7: showScreen('screenLevel7'); break;
+  }
+}
+
+/* ================================================================
+   レベルクリア処理
+================================================================ */
+function clearLevel(levelId) {
+  // スコアを加算
+  state.score += 100;
+  // クリアリストに追加（重複なし）
+  if (!state.clearedLevels.includes(levelId)) {
+    state.clearedLevels.push(levelId);
+  }
+  // セーブ
+  saveGame();
+  // ヘッダー更新
+  updateHeader();
+  // メニューへ
+  goToMenu();
+  // 紙吹雪（フローティングアニメ）
+  spawnFloating('⭐', 3);
+}
+
+/* ================================================================
+   フローティングアニメーション（コイン・星など浮き上がる）
+================================================================ */
+function spawnFloating(emoji, count) {
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'floating-anim';
+      el.textContent = emoji;
+      el.style.left = (30 + Math.random() * 40) + 'vw';
+      el.style.top  = '60vh';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    }, i * 200);
+  }
+}
+
+/* ================================================================
+   チャート描画ユーティリティ
+   canvas要素に折れ線グラフを描く
+================================================================ */
+function drawChart(canvasId, prices, highlightIndex, entryPrice, positionType) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Retina（高DPI）対応：devicePixelRatioに合わせてcanvasの実解像度を設定
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth  || 520;
+  const H = canvas.offsetHeight || 180;
+  canvas.width  = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (!prices || prices.length < 2) return;
+
+  // 価格の最小・最大を計算（余白あり）
+  const min = Math.min(...prices) - 0.5;
+  const max = Math.max(...prices) + 0.5;
+  const range = max - min;
+
+  // 価格→Y座標に変換するヘルパー
+  const toY = p => H - ((p - min) / range) * (H - 20) - 10;
+  // インデックス→X座標
+  const toX = i => (i / (prices.length - 1)) * (W - 20) + 10;
+
+  // 背景グリッド（横線）
+  ctx.strokeStyle = '#F3F4F6';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const y = 10 + (g / 4) * (H - 20);
+    ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(W - 10, y); ctx.stroke();
+  }
+
+  // エントリー価格ライン（取引中）
+  if (entryPrice !== undefined) {
+    const ey = toY(entryPrice);
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(10, ey); ctx.lineTo(W - 10, ey); ctx.stroke();
+    ctx.setLineDash([]);
+    // ラベル
+    ctx.fillStyle = '#F59E0B';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(`参入:${entryPrice.toFixed(2)}`, 14, ey - 4);
+  }
+
+  // 折れ線を描く
+  ctx.beginPath();
+  prices.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(toX(i), toY(p));
+    else         ctx.lineTo(toX(i), toY(p));
+  });
+
+  // 利益・損失に応じて色を変える
+  let strokeColor = '#3B82F6';
+  if (positionType === 'buy' && prices[prices.length-1] > (entryPrice||0)) strokeColor = '#10B981';
+  if (positionType === 'buy' && prices[prices.length-1] < (entryPrice||0)) strokeColor = '#EF4444';
+  if (positionType === 'sell' && prices[prices.length-1] < (entryPrice||0)) strokeColor = '#10B981';
+  if (positionType === 'sell' && prices[prices.length-1] > (entryPrice||0)) strokeColor = '#EF4444';
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // グラデーション塗りつぶし
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, strokeColor + '33');
+  grad.addColorStop(1, strokeColor + '00');
+  ctx.lineTo(toX(prices.length - 1), H);
+  ctx.lineTo(toX(0), H);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // ハイライト点（現在の最後の点）
+  if (highlightIndex !== undefined) {
+    const hx = toX(highlightIndex);
+    const hy = toY(prices[highlightIndex]);
+    ctx.beginPath();
+    ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = strokeColor;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+/* ランダムな価格データを生成（ウォークランダム） */
+function generatePrices(startPrice, length, volatility) {
+  const prices = [startPrice];
+  for (let i = 1; i < length; i++) {
+    const change = (Math.random() - 0.5) * volatility;
+    prices.push(Math.round((prices[i-1] + change) * 100) / 100);
+  }
+  return prices;
+}
+
+/* ================================================================
+   レベル1：「買い」とは何か
+================================================================ */
+let l1UserChoice = '';
+
+function startLevel1() {
+  // リセット
+  document.getElementById('l1step1').style.display = 'block';
+  document.getElementById('l1step2').style.display = 'none';
+  document.getElementById('l1step3').style.display = 'none';
+  // ステップインジケーターリセット
+  updateStepIndicator('step1Indicator', 0, 3);
+  showScreen('screenLevel1');
+}
+
+function l1Answer(choice) {
+  l1UserChoice = choice;
+
+  // 選択肢ボタンのビジュアル更新
+  const btns = document.querySelectorAll('#l1step1 .choice-btn');
+  btns.forEach(btn => {
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '.6';
+  });
+
+  // ステップ1を非表示→ステップ2を表示
+  document.getElementById('l1step1').style.display = 'none';
+  document.getElementById('l1step2').style.display = 'block';
+  updateStepIndicator('step1Indicator', 1, 3);
+
+  // 選択に応じてコンテンツを変更
+  let teacherMsg = '';
+  let resultValue = '';
+  let resultClass = '';
+  let pnlHtml = '';
+  let explainHtml = '';
+
+  if (choice === 'up') {
+    teacherMsg = `<strong>正解！</strong> 上がると思った時はFXで「買い」を選びます。<br><br>予想通り<strong style="color:var(--green);">151円</strong>になりました！`;
+    resultValue = '<div style="font-size:2rem; font-weight:900; color:var(--green);">151円</div>';
+    pnlHtml = '<div class="pnl-display pnl-up">+1円の利益 🎉</div>';
+    explainHtml = `<p style="font-size:.9rem; line-height:1.8;">
+      150円の時に買って、151円になったので<br>
+      <strong style="color:var(--green);">1円の利益</strong>が出ました！<br><br>
+      FXでは「安く買って高く売る」ことで利益を出します。
+    </p>`;
+    spawnFloating('💰', 2);
+  } else if (choice === 'down') {
+    teacherMsg = `下がると予想したんだね。<br>もし「買い」を選んでいたら…<br>価格が<strong style="color:var(--red);">149円</strong>になったとすると？`;
+    resultValue = '<div style="font-size:2rem; font-weight:900; color:var(--red);">149円</div>';
+    pnlHtml = '<div class="pnl-display pnl-down">-1円の損失 😢</div>';
+    explainHtml = `<p style="font-size:.9rem; line-height:1.8;">
+      150円で買って、149円になったので<br>
+      <strong style="color:var(--red);">1円の損失</strong>です。<br><br>
+      「買い」は上がった時だけ利益になります！
+    </p>`;
+  } else {
+    teacherMsg = `「わからない」のも正直でいいね！<br>FXも最初は予想が難しいものです。<br><br>では、上がった場合を見てみよう📈`;
+    resultValue = '<div style="font-size:2rem; font-weight:900; color:var(--green);">151円</div>';
+    pnlHtml = '<div class="pnl-display pnl-up">+1円の利益（例）🎉</div>';
+    explainHtml = `<p style="font-size:.9rem; line-height:1.8;">
+      150円で買って151円になれば<strong>利益</strong>、<br>
+      149円になれば<strong>損失</strong>になります。<br><br>
+      FXは「予想＝取引の判断」なんです！
+    </p>`;
+  }
+
+  document.getElementById('l1teacherMsg').innerHTML = teacherMsg;
+  document.getElementById('l1ResultValue').innerHTML = resultValue;
+  document.getElementById('l1PnlBox').innerHTML = pnlHtml;
+  document.getElementById('l1Explanation').innerHTML = explainHtml;
+}
+
+function l1Step3() {
+  document.getElementById('l1step2').style.display = 'none';
+  document.getElementById('l1step3').style.display = 'block';
+  updateStepIndicator('step1Indicator', 2, 3);
+}
+
+/* ステップインジケーター更新 */
+function updateStepIndicator(id, currentStep, total) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const dots = container.querySelectorAll('.step-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.remove('active', 'done');
+    if (i < currentStep) dot.classList.add('done');
+    else if (i === currentStep) dot.classList.add('active');
+  });
+}
+
+/* ================================================================
+   レベル2：「売り」とは何か
+================================================================ */
+function startLevel2() {
+  // UIをリセット
+  document.getElementById('l2BeforeAction').style.display = 'block';
+  document.getElementById('l2AfterAction').style.display = 'none';
+  document.getElementById('l2Result').style.display = 'none';
+  document.getElementById('l2content').style.display = 'block';
+  document.getElementById('l2summary').style.display = 'none';
+  document.getElementById('l2CurrentPrice').textContent = '151円';
+  showScreen('screenLevel2');
+}
+
+function l2DoSell() {
+  document.getElementById('l2BeforeAction').style.display = 'none';
+  document.getElementById('l2AfterAction').style.display = 'block';
+}
+
+function l2ShowResult() {
+  document.getElementById('l2AfterAction').style.display = 'none';
+  document.getElementById('l2Result').style.display = 'block';
+  document.getElementById('l2CurrentPrice').textContent = '150円';
+  spawnFloating('💰', 2);
+}
+
+function l2Complete() {
+  document.getElementById('l2content').style.display = 'none';
+  document.getElementById('l2summary').style.display = 'block';
+}
+
+/* ================================================================
+   レベル3：利益と損失の体験
+================================================================ */
+let l3State = {
+  prices: [],          // チャートデータ
+  positionType: null,  // 'buy' or 'sell'
+  entryPrice: 0,       // 参入価格
+  phase: 'first',      // 'first'（利益体験）or 'second'（損失体験）
+};
+
+function startLevel3() {
+  l3State.phase = 'first';
+  l3State.positionType = null;
+  // UIリセット
+  document.getElementById('l3content').style.display = 'block';
+  document.getElementById('l3summary').style.display = 'none';
+  document.getElementById('l3TradePanel').style.display = 'block';
+  document.getElementById('l3PositionPanel').style.display = 'none';
+  document.getElementById('l3Result').style.display = 'none';
+  document.getElementById('l3Actions').innerHTML = `
+    <button class="btn btn-green btn-small" onclick="l3Buy()">📈 買う</button>
+    <button class="btn btn-red btn-small" onclick="l3Sell()">📉 売る</button>
+  `;
+  document.getElementById('l3TradeMsg').textContent = '今の価格でドルを「買い」ますか？「売り」ますか？';
+
+  // チャートデータ生成（上昇トレンド）
+  l3State.prices = generatePrices(150, 20, 0.3);
+  drawChart('l3Chart', l3State.prices, l3State.prices.length - 1);
+  document.getElementById('l3CurrentBadge').textContent = `現在: ${l3State.prices[l3State.prices.length-1].toFixed(2)}円`;
+
+  showScreen('screenLevel3');
+}
+
+function l3Buy() {
+  l3State.positionType = 'buy';
+  l3State.entryPrice = l3State.prices[l3State.prices.length - 1];
+  l3OpenPosition();
+}
+
+function l3Sell() {
+  l3State.positionType = 'sell';
+  l3State.entryPrice = l3State.prices[l3State.prices.length - 1];
+  l3OpenPosition();
+}
+
+function l3OpenPosition() {
+  document.getElementById('l3TradePanel').style.display = 'none';
+  document.getElementById('l3PositionPanel').style.display = 'block';
+
+  document.getElementById('l3PosType').textContent = l3State.positionType === 'buy' ? '📈 買い' : '📉 売り';
+  document.getElementById('l3EntryPrice').textContent = l3State.entryPrice.toFixed(2) + '円';
+
+  // 価格をリアルタイム更新（simulate動き）
+  l3SimulatePrice();
+}
+
+function l3SimulatePrice() {
+  // 取引状況に応じて価格が有利に動くようにする（体験重視）
+  const lastPrice = l3State.prices[l3State.prices.length - 1];
+
+  // 第1フェーズ：利益体験なので有利な方向に少し誘導
+  let direction = 1;
+  if (l3State.phase === 'second') direction = -1; // 第2フェーズは逆
+  if (l3State.positionType === 'sell') direction *= -1;
+
+  const newPrice = Math.round((lastPrice + direction * 0.3 + (Math.random() - 0.5) * 0.2) * 100) / 100;
+  l3State.prices.push(newPrice);
+
+  // チャート再描画
+  drawChart('l3Chart', l3State.prices, l3State.prices.length - 1, l3State.entryPrice, l3State.positionType);
+
+  // 含み損益を計算・表示
+  const diff = l3State.positionType === 'buy'
+    ? newPrice - l3State.entryPrice
+    : l3State.entryPrice - newPrice;
+  const pnlEl = document.getElementById('l3PnL');
+  const sign = diff >= 0 ? '+' : '';
+  pnlEl.textContent = `${sign}${diff.toFixed(2)}円`;
+  pnlEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('l3CurrentPrice').textContent = newPrice.toFixed(2) + '円';
+  document.getElementById('l3CurrentBadge').textContent = `現在: ${newPrice.toFixed(2)}円`;
+}
+
+function l3Settle() {
+  const currentPrice = l3State.prices[l3State.prices.length - 1];
+  const diff = l3State.positionType === 'buy'
+    ? currentPrice - l3State.entryPrice
+    : l3State.entryPrice - currentPrice;
+
+  const isProfit = diff >= 0;
+  const sign = diff >= 0 ? '+' : '';
+
+  // 結果表示
+  document.getElementById('l3PositionPanel').style.display = 'none';
+  document.getElementById('l3Result').style.display = 'block';
+
+  const resultCard = document.getElementById('l3ResultCard');
+  const resultTitle = document.getElementById('l3ResultTitle');
+  const resultPnl   = document.getElementById('l3ResultPnl');
+  const resultExplain = document.getElementById('l3ResultExplain');
+
+  if (isProfit) {
+    resultTitle.textContent = '💚 利益が出ました！';
+    resultPnl.className = 'pnl-display pnl-up';
+    resultPnl.textContent = `${sign}${diff.toFixed(2)}円の利益`;
+
+    const why = l3State.positionType === 'buy'
+      ? `${l3State.entryPrice.toFixed(2)}円で<strong>買って</strong>、${currentPrice.toFixed(2)}円で<strong>売った（決済した）</strong>ので<br>差額の<strong>${diff.toFixed(2)}円が利益</strong>になりました！`
+      : `${l3State.entryPrice.toFixed(2)}円で<strong>売って</strong>、${currentPrice.toFixed(2)}円で<strong>買い戻した（決済した）</strong>ので<br>差額の<strong>${diff.toFixed(2)}円が利益</strong>になりました！`;
+
+    resultExplain.className = 'info-box good';
+    resultExplain.innerHTML = `<strong>なぜ利益が出たの？</strong><br>${why}`;
+    spawnFloating('💰', 3);
+  } else {
+    resultTitle.textContent = '🔴 損失が出ました';
+    resultPnl.className = 'pnl-display pnl-down';
+    resultPnl.textContent = `${sign}${diff.toFixed(2)}円の損失`;
+
+    const why = l3State.positionType === 'buy'
+      ? `${l3State.entryPrice.toFixed(2)}円で<strong>買って</strong>、${currentPrice.toFixed(2)}円になったので<br><strong>予想と逆方向</strong>に動いて損失になりました。`
+      : `${l3State.entryPrice.toFixed(2)}円で<strong>売って</strong>、${currentPrice.toFixed(2)}円になったので<br><strong>予想と逆方向</strong>に動いて損失になりました。`;
+
+    resultExplain.className = 'info-box warn';
+    resultExplain.innerHTML = `<strong>なぜ損失が出たの？</strong><br>${why}<br><br>損失が出ることはFXでは普通。大切なのは次の判断！`;
+  }
+
+  // 第2フェーズへの誘導ボタン設定
+  const nextBtn = document.getElementById('l3NextBtn');
+  if (l3State.phase === 'first') {
+    nextBtn.textContent = isProfit ? '次：損失も体験してみよう →' : '次：利益も体験してみよう →';
+    nextBtn.onclick = l3StartSecondPhase;
+  } else {
+    nextBtn.textContent = '学習完了！まとめを見る →';
+    nextBtn.onclick = l3ShowSummary;
+  }
+}
+
+function l3StartSecondPhase() {
+  l3State.phase = 'second';
+  l3State.positionType = null;
+  // UIリセット
+  document.getElementById('l3Result').style.display = 'none';
+  document.getElementById('l3TradePanel').style.display = 'block';
+  document.getElementById('l3PositionPanel').style.display = 'none';
+  document.getElementById('l3TradeMsg').textContent = '今度も取引してみよう！どうなるかな？';
+
+  // 今度は逆方向に動くチャートを生成
+  l3State.prices = generatePrices(150, 20, 0.3);
+  drawChart('l3Chart', l3State.prices, l3State.prices.length - 1);
+  document.getElementById('l3CurrentBadge').textContent = `現在: ${l3State.prices[l3State.prices.length-1].toFixed(2)}円`;
+}
+
+function l3ShowSummary() {
+  document.getElementById('l3content').style.display = 'none';
+  document.getElementById('l3summary').style.display = 'block';
+}
+
+/* ================================================================
+   レベル4：利確と損切り
+================================================================ */
+let l4State = {
+  phase: 0,     // 0: 利確シナリオ、1: 損切りシナリオ
+  prices: [],
+  entryPrice: 0,
+  settled: false,
+};
+
+function startLevel4() {
+  l4State.phase = 0;
+  l4State.settled = false;
+  document.getElementById('l4content').style.display = 'block';
+  document.getElementById('l4summary').style.display = 'none';
+  document.getElementById('l4Result').style.display = 'none';
+  l4SetupScenario();
+  showScreen('screenLevel4');
+}
+
+function l4SetupScenario() {
+  if (l4State.phase === 0) {
+    // 利確シナリオ：価格が上がっていく
+    l4State.prices = generatePrices(150, 15, 0.2);
+    // 最後を少し高めに誘導
+    for (let i = 0; i < 5; i++) {
+      const last = l4State.prices[l4State.prices.length - 1];
+      l4State.prices.push(Math.round((last + 0.3) * 100) / 100);
+    }
+    l4State.entryPrice = l4State.prices[0];
+    document.getElementById('l4ScenarioText').innerHTML = `
+      <strong>シナリオ1：利確チャレンジ</strong><br>
+      ${l4State.entryPrice.toFixed(2)}円で「買い」ポジションを持っています。<br>
+      価格が上がっています！<strong>いつ決済する（利確する）？</strong><br>
+      <span style="color:var(--gray-600); font-size:.82rem;">「決済！」ボタンを押したタイミングで利益が確定します</span>
+    `;
+    l4State.settled = false;
+  } else {
+    // 損切りシナリオ：価格が下がっていく
+    l4State.prices = generatePrices(150, 10, 0.2);
+    for (let i = 0; i < 8; i++) {
+      const last = l4State.prices[l4State.prices.length - 1];
+      l4State.prices.push(Math.round((last - 0.35 + (Math.random() - 0.5) * 0.1) * 100) / 100);
+    }
+    l4State.entryPrice = l4State.prices[0];
+    document.getElementById('l4ScenarioText').innerHTML = `
+      <strong>シナリオ2：損切りチャレンジ</strong><br>
+      ${l4State.entryPrice.toFixed(2)}円で「買い」ポジションを持っています。<br>
+      価格が下がっています… <strong>いつ損切りする？</strong><br>
+      <span style="color:var(--gray-600); font-size:.82rem;">我慢しすぎると損失が膨らむよ！</span>
+    `;
+    l4State.settled = false;
+  }
+
+  // 最初は途中まで表示
+  const showLen = Math.floor(l4State.prices.length * 0.5);
+  drawChart('l4Chart', l4State.prices.slice(0, showLen), showLen - 1, l4State.entryPrice, 'buy');
+
+  document.getElementById('l4DecisionArea').innerHTML = `
+    <button class="btn btn-yellow" onclick="l4Settle()">
+      🏁 決済する！
+    </button>
+    <button class="btn btn-secondary btn-small" style="margin-top:8px;" onclick="l4Advance()">
+      ⏩ もう少し待つ
+    </button>
+  `;
+  document.getElementById('l4Result').style.display = 'none';
+}
+
+let l4CurrentIndex = 0;
+function l4Advance() {
+  const showLen = Math.min(l4State.prices.length - 1, (l4CurrentIndex + 1 || Math.floor(l4State.prices.length * 0.5)) + 3);
+  l4CurrentIndex = showLen;
+  drawChart('l4Chart', l4State.prices.slice(0, showLen + 1), showLen, l4State.entryPrice, 'buy');
+
+  if (showLen >= l4State.prices.length - 1) {
+    // もう進めない
+    document.querySelector('#l4DecisionArea .btn-secondary').disabled = true;
+    document.querySelector('#l4DecisionArea .btn-secondary').style.opacity = '.5';
+  }
+}
+
+function l4Settle() {
+  if (l4State.settled) return;
+  l4State.settled = true;
+
+  const currentIndex = l4CurrentIndex || Math.floor(l4State.prices.length * 0.5);
+  const currentPrice = l4State.prices[currentIndex] || l4State.prices[Math.floor(l4State.prices.length * 0.5)];
+  const diff = currentPrice - l4State.entryPrice;
+  const isProfit = diff >= 0;
+  const sign = diff >= 0 ? '+' : '';
+
+  // 全チャート表示
+  drawChart('l4Chart', l4State.prices, l4State.prices.length - 1, l4State.entryPrice, 'buy');
+
+  document.getElementById('l4Result').style.display = 'block';
+  const resultCard = document.getElementById('l4ResultCard');
+
+  let content = '';
+  if (l4State.phase === 0) {
+    // 利確シナリオの解説
+    const finalPrice = l4State.prices[l4State.prices.length - 1];
+    const maxDiff = finalPrice - l4State.entryPrice;
+    content = `
+      <h3 style="margin-bottom:10px;">${isProfit ? '💚 利確成功！' : '🔴 損失で決済…'}</h3>
+      <div class="pnl-display ${isProfit ? 'pnl-up' : 'pnl-down'}" style="margin-bottom:12px;">
+        ${sign}${diff.toFixed(2)}円で決済
+      </div>
+      <div class="info-box good">
+        <strong>💡 利確のポイント</strong><br>
+        あなたが<strong>${sign}${diff.toFixed(2)}円</strong>で決済した後、<br>
+        最終的には<strong>+${maxDiff.toFixed(2)}円</strong>まで上がりました。<br><br>
+        ${isProfit
+          ? '利確した判断は正解！欲張りすぎずにしっかり利益を確保できました 🎉'
+          : '少し早かったかも？でも自分のルールで決めることが大切だよ！'
+        }
+      </div>
+    `;
+  } else {
+    // 損切りシナリオの解説
+    const finalPrice = l4State.prices[l4State.prices.length - 1];
+    const maxLoss = finalPrice - l4State.entryPrice;
+    content = `
+      <h3 style="margin-bottom:10px;">${isProfit ? '😮 まだプラス？' : '✂️ 損切り実行！'}</h3>
+      <div class="pnl-display ${isProfit ? 'pnl-up' : 'pnl-down'}" style="margin-bottom:12px;">
+        ${sign}${diff.toFixed(2)}円で決済
+      </div>
+      <div class="info-box warn">
+        <strong>💡 損切りのポイント</strong><br>
+        あなたが決済した後、<br>
+        最終的には<strong>${maxLoss.toFixed(2)}円</strong>まで下がりました。<br><br>
+        ${diff > maxLoss
+          ? `早めに損切りして正解！最後まで持っていたら<strong>${Math.abs(maxLoss).toFixed(2)}円の損失</strong>になっていたかも。`
+          : `損切りが少し遅かったかも。損失を小さく抑えることが大切だよ！`
+        }
+      </div>
+    `;
+  }
+
+  document.getElementById('l4ResultContent').innerHTML = content;
+
+  const nextBtn = document.getElementById('l4NextBtn');
+  if (l4State.phase === 0) {
+    nextBtn.textContent = '次：損切りも体験しよう →';
+    nextBtn.onclick = () => {
+      l4State.phase = 1;
+      l4CurrentIndex = 0;
+      l4SetupScenario();
+      document.getElementById('l4Result').style.display = 'none';
+    };
+  } else {
+    nextBtn.textContent = '学習完了！まとめを見る →';
+    nextBtn.onclick = () => {
+      document.getElementById('l4content').style.display = 'none';
+      document.getElementById('l4summary').style.display = 'block';
+    };
+  }
+}
+
+/* ================================================================
+   レベル5：ロットのクイズ
+================================================================ */
+function l5Answer(answer, btn) {
+  // 正解は10（2円 × 5ロット）
+  const allBtns = document.querySelectorAll('#l5Quiz .choice-btn');
+  allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+  if (answer === 10) {
+    btn.classList.add('correct');
+    document.getElementById('l5Result').style.display = 'block';
+    document.getElementById('l5CompleteBtn').style.display = 'block';
+    spawnFloating('⭐', 3);
+  } else {
+    btn.classList.add('wrong');
+    btn.innerHTML += ' <span style="color:var(--red);">✗</span>';
+    // 正解ボタンをハイライト
+    allBtns.forEach(b => {
+      if (b.textContent.includes('10円')) {
+        b.classList.add('correct');
+        b.innerHTML = b.innerHTML.replace('💭', '✅');
+      }
+    });
+    setTimeout(() => {
+      document.getElementById('l5Result').style.display = 'block';
+      document.getElementById('l5CompleteBtn').style.display = 'block';
+    }, 800);
+  }
+}
+
+/* ================================================================
+   レベル6：レバレッジ計算機
+================================================================ */
+function calcLeverage() {
+  const ownMoney = parseInt(document.getElementById('leverageOwnMoney').value);
+  const rate = parseInt(document.getElementById('leverageRate').value);
+  const result = ownMoney * rate;
+  // 見やすい表示
+  let display = '';
+  if (result >= 10000) display = `${(result / 10000).toLocaleString()}万円`;
+  else display = `${result.toLocaleString()}円`;
+  document.getElementById('leverageResult').textContent = display;
+}
+
+/* ================================================================
+   レベル7：CPIシナリオ
+================================================================ */
+function showCpiScenario(type) {
+  document.getElementById('cpiFlow').style.display = 'block';
+  const content = document.getElementById('cpiFlowContent');
+
+  if (type === 'high') {
+    content.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:.88rem;">
+        <div style="background:var(--red-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">🍔</span>
+          <span>ハンバーガーの値段が上がった → <strong>CPIが高い</strong></span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--yellow-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">🏦</span>
+          <span>FRB（アメリカ中央銀行）が<strong>金利を上げる</strong>かも</span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--green-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">💵</span>
+          <span><strong>ドルが買われやすくなる</strong>（金利が高い通貨は人気）</span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--blue-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">📈</span>
+          <span><strong>ドル円が上がる</strong>（ドル高・円安）</span>
+        </div>
+      </div>
+    `;
+    // 上昇チャートを描画
+    const prices = generatePrices(150, 20, 0.2);
+    for (let i = 0; i < 10; i++) {
+      prices.push(Math.round((prices[prices.length-1] + 0.3) * 100) / 100);
+    }
+    setTimeout(() => drawChart('cpiChart', prices, prices.length - 1), 100);
+  } else {
+    content.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:.88rem;">
+        <div style="background:var(--blue-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">🛒</span>
+          <span>物価が落ち着いている → <strong>CPIが低め</strong></span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--gray-100); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">🏦</span>
+          <span>FRBが金利を<strong>下げる</strong>可能性</span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--red-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">💵</span>
+          <span>ドルが<strong>売られやすくなる</strong></span>
+        </div>
+        <div style="text-align:center; font-size:1.2rem; color:var(--gray-400);">↓</div>
+        <div style="background:var(--yellow-light); padding:10px; border-radius:var(--radius-sm); display:flex; gap:10px; align-items:center;">
+          <span style="font-size:1.4rem;">📉</span>
+          <span><strong>ドル円が下がる</strong>（ドル安・円高）</span>
+        </div>
+      </div>
+    `;
+    // 下降チャート
+    const prices = generatePrices(152, 20, 0.2);
+    for (let i = 0; i < 10; i++) {
+      prices.push(Math.round((prices[prices.length-1] - 0.25) * 100) / 100);
+    }
+    setTimeout(() => drawChart('cpiChart', prices, prices.length - 1), 100);
+  }
+
+  document.getElementById('l7CompleteArea').style.display = 'block';
+}
+
+/* ================================================================
+   練習モード
+================================================================ */
+let practiceState = {
+  allPrices: [],   // 全チャートデータ
+  shownCount: 30,  // 表示中の本数
+  posType: null,   // 'buy' or 'sell'
+  entryPrice: 0,
+  settled: false,
+  tradeCount: 0,   // 取引回数
+};
+
+function startPractice() {
+  // 練習モード用の長いチャートを生成
+  practiceState.allPrices = generatePrices(150, 100, 0.35);
+  practiceState.shownCount = 30;
+  practiceState.posType = null;
+  practiceState.settled = false;
+  practiceState.tradeCount = 0;
+
+  // UIリセット
+  document.getElementById('practiceNoPosition').style.display = 'block';
+  document.getElementById('practiceHasPosition').style.display = 'none';
+  document.getElementById('practiceResult').style.display = 'none';
+  document.getElementById('practiceAdvanceBtn').style.display = 'block';
+
+  practiceRedrawChart();
+  showScreen('screenPractice');
+}
+
+function practiceRedrawChart() {
+  const prices = practiceState.allPrices.slice(0, practiceState.shownCount);
+  const current = prices[prices.length - 1];
+
+  document.getElementById('practicePriceBadge').textContent = current.toFixed(2);
+
+  if (practiceState.posType) {
+    // ポジション中：含み損益を表示
+    const diff = practiceState.posType === 'buy'
+      ? current - practiceState.entryPrice
+      : practiceState.entryPrice - current;
+    const sign = diff >= 0 ? '+' : '';
+    const pnlEl = document.getElementById('practicePnl');
+    pnlEl.textContent = `${sign}${diff.toFixed(2)}円`;
+    pnlEl.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('practiceCurrentP').textContent = current.toFixed(2) + '円';
+
+    drawChart('practiceChart', prices, prices.length - 1, practiceState.entryPrice, practiceState.posType);
+  } else {
+    drawChart('practiceChart', prices, prices.length - 1);
+  }
+}
+
+function practiceBuy() {
+  practiceState.posType = 'buy';
+  practiceState.entryPrice = practiceState.allPrices[practiceState.shownCount - 1];
+  practiceTogglePosition();
+}
+
+function practiceSell() {
+  practiceState.posType = 'sell';
+  practiceState.entryPrice = practiceState.allPrices[practiceState.shownCount - 1];
+  practiceTogglePosition();
+}
+
+function practiceTogglePosition() {
+  document.getElementById('practiceNoPosition').style.display = 'none';
+  document.getElementById('practiceHasPosition').style.display = 'block';
+
+  document.getElementById('practicePosType').textContent = practiceState.posType === 'buy' ? '📈 買い' : '📉 売り';
+  document.getElementById('practiceEntryPrice').textContent = practiceState.entryPrice.toFixed(2) + '円';
+  practiceRedrawChart();
+}
+
+function advancePracticeChart() {
+  // チャートを1〜3本進める
+  practiceState.shownCount = Math.min(practiceState.allPrices.length, practiceState.shownCount + 3);
+  practiceRedrawChart();
+
+  if (practiceState.shownCount >= practiceState.allPrices.length) {
+    document.getElementById('practiceAdvanceBtn').disabled = true;
+    document.getElementById('practiceAdvanceBtn').textContent = '⏹ これ以上進めません';
+  }
+}
+
+function practiceSettle() {
+  if (practiceState.settled) return;
+  practiceState.settled = true;
+
+  const currentPrice = practiceState.allPrices[practiceState.shownCount - 1];
+  const diff = practiceState.posType === 'buy'
+    ? currentPrice - practiceState.entryPrice
+    : practiceState.entryPrice - currentPrice;
+  const isProfit = diff >= 0;
+  const sign = diff >= 0 ? '+' : '';
+
+  // 全チャートを表示
+  const allPrices = practiceState.allPrices;
+  drawChart('practiceChart', allPrices, allPrices.length - 1, practiceState.entryPrice, practiceState.posType);
+
+  // UIを切り替え
+  document.getElementById('practiceHasPosition').style.display = 'none';
+  document.getElementById('practiceAdvanceBtn').style.display = 'none';
+  document.getElementById('practiceResult').style.display = 'block';
+
+  // 結果タイトル
+  document.getElementById('practiceResultTitle').textContent = isProfit
+    ? `💚 ${sign}${diff.toFixed(2)}円の利益！`
+    : `🔴 ${sign}${diff.toFixed(2)}円の損失…`;
+
+  // PnL表示
+  const pnlEl = document.getElementById('practiceResultPnl');
+  pnlEl.className = `pnl-display ${isProfit ? 'pnl-up' : 'pnl-down'}`;
+  pnlEl.textContent = `${sign}${diff.toFixed(2)}円`;
+
+  // 解説
+  const finalPrice = allPrices[allPrices.length - 1];
+  let explain = '';
+  if (practiceState.posType === 'buy') {
+    if (isProfit) {
+      explain = `
+        <div class="info-box good" style="margin-bottom:10px;">
+          <strong>✅ なぜ利益になったの？</strong><br>
+          <strong>${practiceState.entryPrice.toFixed(2)}円</strong>で「買い」を入れて、<br>
+          <strong>${currentPrice.toFixed(2)}円</strong>で決済しました。<br>
+          予想通りドルが上がったので、差額の<strong>${diff.toFixed(2)}円が利益</strong>に！
+        </div>
+      `;
+    } else {
+      explain = `
+        <div class="info-box warn" style="margin-bottom:10px;">
+          <strong>❌ なぜ損失になったの？</strong><br>
+          <strong>${practiceState.entryPrice.toFixed(2)}円</strong>で「買い」を入れましたが、<br>
+          ドルが下がって<strong>${currentPrice.toFixed(2)}円</strong>になりました。<br>
+          買った時より安くなったので<strong>${Math.abs(diff).toFixed(2)}円の損失</strong>に…
+        </div>
+        <div class="info-box tip">
+          <strong>💡 次回のヒント</strong><br>
+          価格が下がり始めたら早めに「損切り」が大切！
+        </div>
+      `;
+    }
+  } else {
+    // 売りポジション
+    if (isProfit) {
+      explain = `
+        <div class="info-box good" style="margin-bottom:10px;">
+          <strong>✅ なぜ利益になったの？</strong><br>
+          <strong>${practiceState.entryPrice.toFixed(2)}円</strong>で「売り」を入れて、<br>
+          <strong>${currentPrice.toFixed(2)}円</strong>で買い戻しました。<br>
+          予想通りドルが下がったので、差額の<strong>${diff.toFixed(2)}円が利益</strong>に！
+        </div>
+      `;
+    } else {
+      explain = `
+        <div class="info-box warn" style="margin-bottom:10px;">
+          <strong>❌ なぜ損失になったの？</strong><br>
+          <strong>${practiceState.entryPrice.toFixed(2)}円</strong>で「売り」を入れましたが、<br>
+          ドルが上がって<strong>${currentPrice.toFixed(2)}円</strong>になりました。<br>
+          売った時より高くなったので<strong>${Math.abs(diff).toFixed(2)}円の損失</strong>に…
+        </div>
+        <div class="info-box tip">
+          <strong>💡 次回のヒント</strong><br>
+          「売り」は下がると思った時だけ！上昇トレンドには注意してね。
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById('practiceResultExplain').innerHTML = explain;
+
+  if (isProfit) spawnFloating('💰', 3);
+}
+
+function practiceReset() {
+  startPractice();
+}
+
+/* ================================================================
+   用語集表示
+================================================================ */
+function showGlossary() {
+  const container = document.getElementById('glossaryUnlocked');
+  const unlockedTerms = GLOSSARY.filter(g => state.clearedLevels.includes(g.level) || g.level <= 1);
+
+  if (unlockedTerms.length === 0) {
+    container.innerHTML = '<p style="color:var(--gray-400); text-align:center; padding:20px;">まずはレベルをクリアして用語を解放しよう！</p>';
+  } else {
+    container.innerHTML = unlockedTerms.map(g => `
+      <div class="glossary-item">
+        <div class="glossary-term">${g.term}</div>
+        <div class="glossary-def">${g.def}</div>
+        <span class="badge badge-blue" style="margin-top:6px; display:inline-block; font-size:.7rem;">Lv${g.level}で解放</span>
+      </div>
+    `).join('');
+  }
+
+  const lockedCount = GLOSSARY.length - unlockedTerms.length;
+  if (lockedCount > 0) {
+    container.innerHTML += `
+      <div style="text-align:center; padding:16px; color:var(--gray-400);">
+        🔒 あと<strong>${lockedCount}個</strong>の用語がレベルクリアで解放されます
+      </div>
+    `;
+  }
+
+  showScreen('screenGlossary');
+}
+
+/* ================================================================
+   ウィンドウリサイズ時にチャートを再描画
+================================================================ */
+window.addEventListener('resize', () => {
+  // 現在表示中の画面のチャートを再描画（必要な場合）
+  if (document.getElementById('screenPractice').classList.contains('active')) {
+    practiceRedrawChart();
+  }
+});
+
+/* ================================================================
+   初回起動時のアニメーション
+================================================================ */
+// アプリ起動時の初回フェードイン
+document.querySelector('#screenTitle').style.opacity = '0';
+setTimeout(() => {
+  document.querySelector('#screenTitle').style.transition = 'opacity .6s ease';
+  document.querySelector('#screenTitle').style.opacity = '1';
+}, 100);
+
+</script>
+</body>
+</html>
